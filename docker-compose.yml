@@ -1,0 +1,32 @@
+services:
+  db:
+    image: mariadb:10.10
+    container_name: ${MYSQL_HOSTNAME}
+    hostname: ${MYSQL_HOSTNAME}
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+
+  rabbit:
+    image: rabbitmq:3-management
+    container_name: ${RABBIT_HOSTNAME}
+    hostname: ${RABBIT_HOSTNAME}
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  app:
+    build: .
+    container_name: app
+    depends_on:
+      - ${RABBIT_HOSTNAME}
+      - ${MYSQL_HOSTNAME}
+    links:
+      - ${RABBIT_HOSTNAME}
+      - ${MYSQL_HOSTNAME}
+    ports:
+      - ${HTTP_SERVER_PORT}:${HTTP_SERVER_PORT}
