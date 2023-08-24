@@ -31,7 +31,7 @@ cd RabbitMQOrderGo
 
 2. Install the streadway/amqp library:
 ```bash
-go get github.com/streadway/amqp
+go get github.com/rabbitmq/amqp091-go
 ```
 
 3. Start the consumer:
@@ -301,7 +301,7 @@ Table: refunds
 
 ## Acknowledgements
 
-This project is built using the `streadway/amqp` Go library for RabbitMQ communication. Special thanks to the library authors and the Go community for their contributions.
+This project is built using the `rabbitmq/amqp091-go` Go library for RabbitMQ communication. Special thanks to the library authors and the Go community for their contributions.
 
 Feel free to customize and expand upon this project to meet your specific use case and business requirements. If you have any questions or suggestions, please open an issue or pull request in this repository.
 
