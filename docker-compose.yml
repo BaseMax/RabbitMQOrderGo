@@ -19,12 +19,18 @@ services:
       - 5672:5672
       - 15672:15672
 
+  wait-for-db:
+    image: atkrad/wait4x
+    depends_on:
+      - db
+    command: tcp ${MYSQL_HOSTNAME}:3306 -t 30s -i 250ms
+
   app:
     build: .
     container_name: app
     depends_on:
-      - ${RABBIT_HOSTNAME}
-      - ${MYSQL_HOSTNAME}
+      wait-for-db:
+        condition: service_completed_successfully
     links:
       - ${RABBIT_HOSTNAME}
       - ${MYSQL_HOSTNAME}
