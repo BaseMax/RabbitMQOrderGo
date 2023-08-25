@@ -101,7 +101,7 @@ func CancelOrder(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
-func LastOrder(c echo.Context) error {
+func FirstOrder(c echo.Context) error {
 	if broker.IsClosed() {
 		if broker.ConnectAndCreateQueue() != nil {
 			return echo.ErrInternalServerError
