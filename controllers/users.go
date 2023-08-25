@@ -10,6 +10,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/BaseMax/RabbitMQOrderGo/conf"
+	"github.com/BaseMax/RabbitMQOrderGo/helpers"
 	"github.com/BaseMax/RabbitMQOrderGo/models"
 )
 
@@ -52,18 +53,12 @@ func Login(c echo.Context) error {
 }
 
 func Refresh(c echo.Context) error {
-	bearer := c.Request().Header.Get("Authorization")
-	if bearer == "" {
-		return echo.ErrBadRequest
-	}
-	token, _, _ := new(jwt.Parser).ParseUnverified(bearer[len("Bearer "):], jwt.MapClaims{})
-	claims := token.Claims.(jwt.MapClaims)
-
+	id, issuer := helpers.GetLoggedinUserInfo(c)
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
-		ID:        fmt.Sprint(claims["jti"]),
-		Issuer:    fmt.Sprint(claims["iss"]),
+		ID:        fmt.Sprint(id),
+		Issuer:    issuer,
 		ExpiresAt: EXPTIME,
 	})
-	bearer, _ = refreshToken.SignedString([]byte(conf.GetJwtSecret()))
+	bearer, _ := refreshToken.SignedString([]byte(conf.GetJwtSecret()))
 	return c.JSON(http.StatusOK, map[string]any{"bearer": bearer})
 }

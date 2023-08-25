@@ -1,23 +1,17 @@
 package middlewares
 
 import (
-	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 
 	"github.com/BaseMax/RabbitMQOrderGo/conf"
+	"github.com/BaseMax/RabbitMQOrderGo/helpers"
 )
 
 func IsAdmin(next echo.HandlerFunc) echo.HandlerFunc {
 	return echo.HandlerFunc(func(c echo.Context) error {
-		bearer := c.Request().Header.Get("Authorization")
-		if bearer == "" {
-			return echo.ErrBadRequest
-		}
-		token, _, _ := new(jwt.Parser).ParseUnverified(bearer[len("Bearer "):], jwt.MapClaims{})
-		claims := token.Claims.(jwt.MapClaims)
-
+		_, loggedinName := helpers.GetLoggedinUserInfo(c)
 		name, _, _ := conf.GetAdminInfo()
-		if claims["iss"] != name {
+		if loggedinName != name {
 			return echo.ErrUnauthorized
 		}
 		return next(c)
