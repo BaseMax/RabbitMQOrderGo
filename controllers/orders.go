@@ -40,3 +40,19 @@ func CreateOrder(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, order)
 }
+
+func FetchOrder(c echo.Context) error {
+	return nil
+}
+
+func EditOrder(c echo.Context) error {
+	return nil
+}
+
+func OrderStatus(c echo.Context) error {
+	return nil
+}
+
+func CancelOrder(c echo.Context) error {
+	return nil
+}
