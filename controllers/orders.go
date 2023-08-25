@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -28,7 +29,7 @@ func CreateOrder(c echo.Context) error {
 		ID:          orderId,
 		UserID:      iid,
 		Description: order.Description,
-		Status:      "processing",
+		Status:      models.ORDER_STATUS_PROCESSING,
 	}
 
 	if broker.IsClosed() {
@@ -54,6 +55,14 @@ func FetchOrder(c echo.Context) error {
 	return c.JSON(http.StatusOK, order)
 }
 
+func FetchAllOrders(c echo.Context) error {
+	orders, err := models.GetAllOrders()
+	if err != nil {
+		return echo.ErrNotFound
+	}
+	return c.JSON(http.StatusOK, orders)
+}
+
 func EditOrder(c echo.Context) error {
 	var order models.Order
 	if err := json.NewDecoder(c.Request().Body).Decode(&order); err != nil {
@@ -63,7 +72,7 @@ func EditOrder(c echo.Context) error {
 	if err != nil {
 		return echo.ErrBadRequest
 	}
-	if models.UpdateOrder(uint(id), order.Description, "") != nil {
+	if models.UpdateOrder(uint(id), order.Description, "") == 0 {
 		return echo.ErrNotFound
 	}
 	return c.NoContent(http.StatusNoContent)
@@ -86,8 +95,32 @@ func CancelOrder(c echo.Context) error {
 	if err != nil {
 		return echo.ErrBadRequest
 	}
-	if models.UpdateOrder(uint(id), "", "canceled") != nil {
+	if models.UpdateOrder(uint(id), "", models.ORDER_STATUS_CANCELED) == 0 {
 		return echo.ErrNotFound
 	}
 	return c.NoContent(http.StatusNoContent)
+}
+
+func LastOrder(c echo.Context) error {
+	if broker.IsClosed() {
+		if broker.ConnectAndCreateQueue() != nil {
+			return echo.ErrInternalServerError
+		}
+	}
+
+	order, err := broker.DequeueLastOrder()
+	if err != nil {
+		log.Println(err)
+		return echo.ErrNotFound
+	}
+
+	return c.JSON(http.StatusOK, order)
+}
+
+func CompleteOrder(c echo.Context) error {
+	return nil
+}
+
+func DeleteOrder(c echo.Context) error {
+	return nil
 }
