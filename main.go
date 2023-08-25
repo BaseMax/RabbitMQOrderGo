@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"net/http"
 
 	"github.com/BaseMax/RabbitMQOrderGo/conf"
 	"github.com/BaseMax/RabbitMQOrderGo/models"
@@ -17,7 +16,10 @@ func main() {
 		log.Fatal("db:", err)
 	}
 
+	if err := models.Migrate(); err != nil {
+		log.Fatal("migrate:", err)
+	}
+
 	r := initRoutes()
-	addr := conf.GetHttpServerAddr()
-	log.Fatal("http:", http.ListenAndServe(addr, r))
+	r.Logger.Fatal(r.Start(conf.GetHttpServerAddr()))
 }

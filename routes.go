@@ -1,19 +1,42 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
+	echojwt "github.com/labstack/echo-jwt/v4"
+	"github.com/labstack/echo/v4"
 
-	"github.com/gorilla/mux"
+	"github.com/BaseMax/RabbitMQOrderGo/conf"
+	"github.com/BaseMax/RabbitMQOrderGo/middlewares"
 )
 
-func initRoutes() *mux.Router {
-	r := mux.NewRouter()
+func TODO(c echo.Context) error { return nil }
 
-	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, "System was not implemented!")
-	})
+func initRoutes() *echo.Echo {
+	e := echo.New()
+	g := e.Group("/", echojwt.WithConfig(echojwt.Config{SigningKey: conf.GetJwtSecret()}))
 
-	return r
+	g.GET("/health", TODO, middlewares.IsAdmin)
+
+	e.POST("/register", TODO)
+	e.POST("/login", TODO)
+	g.POST("refresh", TODO)
+	g.PUT("user/:username", TODO, middlewares.IsAdmin)
+
+	g.POST("orders/", TODO)
+	g.GET("orders/:id", TODO)
+	g.PUT("orders/:id", TODO)
+	g.GET("orders/:id/status", TODO)
+	g.POST("orders/:id/cancel", TODO)
+	g.GET("orders/last", TODO, middlewares.IsAdmin)
+	g.POST("orders/last/done", TODO, middlewares.IsAdmin)
+	g.DELETE("orders/:id", TODO, middlewares.IsAdmin)
+
+	g.POST("refunds/", TODO)
+	g.GET("refunds/:id", TODO)
+	g.GET("refunds/:id/status", TODO)
+	g.POST("refunds/:id/decancel", TODO)
+	g.GET("refunds/last", TODO, middlewares.IsAdmin)
+	g.POST("refunds/last/done", TODO, middlewares.IsAdmin)
+	g.DELETE("refunds/:id", TODO, middlewares.IsAdmin)
+
+	return e
 }
