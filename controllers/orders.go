@@ -108,9 +108,13 @@ func LastOrder(c echo.Context) error {
 		}
 	}
 
-	order, err := broker.DequeueLastOrder()
+	order, err := broker.DequeueFirstOrder(false)
 	if err != nil {
 		log.Println(err)
+		return echo.ErrNotFound
+	}
+
+	if order == nil {
 		return echo.ErrNotFound
 	}
 
@@ -118,7 +122,23 @@ func LastOrder(c echo.Context) error {
 }
 
 func CompleteOrder(c echo.Context) error {
-	return nil
+	if broker.IsClosed() {
+		if broker.ConnectAndCreateQueue() != nil {
+			return echo.ErrInternalServerError
+		}
+	}
+
+	order, err := broker.DequeueFirstOrder(true)
+	if err != nil {
+		log.Println(err)
+		return echo.ErrNotFound
+	}
+
+	if order == nil {
+		return echo.ErrNotFound
+	}
+
+	return c.JSON(http.StatusOK, order)
 }
 
 func DeleteOrder(c echo.Context) error {
