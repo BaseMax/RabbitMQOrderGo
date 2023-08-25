@@ -101,14 +101,14 @@ func CancelOrder(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
-func FirstOrder(c echo.Context) error {
+func handleQueue(c echo.Context, processComplete bool) error {
 	if broker.IsClosed() {
 		if broker.ConnectAndCreateQueue() != nil {
 			return echo.ErrInternalServerError
 		}
 	}
 
-	order, err := broker.DequeueFirstOrder(false)
+	order, err := broker.DequeueFirstOrder(processComplete)
 	if err != nil {
 		log.Println(err)
 		return echo.ErrNotFound
@@ -121,24 +121,12 @@ func FirstOrder(c echo.Context) error {
 	return c.JSON(http.StatusOK, order)
 }
 
+func FirstOrder(c echo.Context) error {
+	return handleQueue(c, false)
+}
+
 func CompleteOrder(c echo.Context) error {
-	if broker.IsClosed() {
-		if broker.ConnectAndCreateQueue() != nil {
-			return echo.ErrInternalServerError
-		}
-	}
-
-	order, err := broker.DequeueFirstOrder(true)
-	if err != nil {
-		log.Println(err)
-		return echo.ErrNotFound
-	}
-
-	if order == nil {
-		return echo.ErrNotFound
-	}
-
-	return c.JSON(http.StatusOK, order)
+	return handleQueue(c, true)
 }
 
 func DeleteOrder(c echo.Context) error {
