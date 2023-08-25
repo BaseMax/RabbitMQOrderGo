@@ -28,7 +28,7 @@ func initRoutes() *echo.Echo {
 	g.PUT("orders/:id", controllers.EditOrder)
 	g.GET("orders/:id/status", controllers.OrderStatus)
 	g.POST("orders/:id/cancel", controllers.CancelOrder)
-	g.GET("orders/last", controllers.LastOrder, middlewares.IsAdmin)
+	g.GET("orders/last", controllers.FirstOrder, middlewares.IsAdmin)
 	g.POST("orders/last/done", controllers.CompleteOrder, middlewares.IsAdmin)
 	g.DELETE("orders/:id", controllers.DeleteOrder, middlewares.IsAdmin)
 
