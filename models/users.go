@@ -19,11 +19,11 @@ func RegisterUser(username, password, email string) error {
 	return db.Create(&user).Error
 }
 
-func LoginUser(username, password, email string) bool {
+func LoginUser(username, password, email string) (uint, error) {
 	hashedByte := sha256.Sum256([]byte(password))
 	hashedString := hex.EncodeToString(hashedByte[:])
 
-	var count int64
-	db.Model(&User{}).Where("username = ? AND password = ? AND email = ?", username, hashedString, email).Count(&count)
-	return count == 1
+	var user User
+	err := db.First(&user).Where("username = ? AND password = ? AND email = ?", username, hashedString, email).Error
+	return user.ID, err
 }

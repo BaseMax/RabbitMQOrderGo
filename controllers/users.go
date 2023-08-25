@@ -37,11 +37,13 @@ func Login(c echo.Context) error {
 	if err := json.NewDecoder(c.Request().Body).Decode(&user); err != nil {
 		return echo.ErrBadRequest
 	}
-	if !models.LoginUser(user.Username, user.Password, user.Email) {
+
+	id, err := models.LoginUser(user.Username, user.Password, user.Email)
+	if err != nil {
 		return echo.ErrNotFound
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
-		ID:        fmt.Sprint(user.ID),
+		ID:        fmt.Sprint(id),
 		Issuer:    user.Username,
 		ExpiresAt: EXPTIME,
 	})
