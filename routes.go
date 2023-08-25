@@ -15,7 +15,7 @@ func initRoutes() *echo.Echo {
 	e := echo.New()
 	g := e.Group("/", echojwt.WithConfig(echojwt.Config{SigningKey: conf.GetJwtSecret()}))
 
-	g.GET("/health", TODO, middlewares.IsAdmin)
+	g.GET("health", controllers.HealthCheck, middlewares.IsAdmin)
 
 	e.POST("/register", controllers.Register)
 	e.POST("/login", controllers.Login)
