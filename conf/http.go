@@ -9,3 +9,7 @@ func GetHttpServerAddr() string {
 	}
 	return address
 }
+
+func GetJwtSecret() []byte {
+	return []byte(os.Getenv("JWT_SECRET"))
+}

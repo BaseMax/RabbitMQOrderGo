@@ -13,3 +13,10 @@ func GetMysqlDsn() string {
 		os.Getenv("MYSQL_DATABASE"),
 	)
 }
+
+func GetAdminInfo() (user, pass, email string) {
+	user = os.Getenv("ADMIN_NAME")
+	pass = os.Getenv("ADMIN_PASSWORD")
+	email = os.Getenv("ADMIN_EMAIL")
+	return
+}
