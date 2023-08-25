@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/BaseMax/RabbitMQOrderGo/conf"
+	"github.com/BaseMax/RabbitMQOrderGo/controllers"
 	"github.com/BaseMax/RabbitMQOrderGo/middlewares"
 )
 
@@ -16,9 +17,9 @@ func initRoutes() *echo.Echo {
 
 	g.GET("/health", TODO, middlewares.IsAdmin)
 
-	e.POST("/register", TODO)
-	e.POST("/login", TODO)
-	g.POST("refresh", TODO)
+	e.POST("/register", controllers.Register)
+	e.POST("/login", controllers.Login)
+	g.POST("refresh", controllers.Refresh)
 	g.PUT("user/:username", TODO, middlewares.IsAdmin)
 
 	g.POST("orders/", TODO)
