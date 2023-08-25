@@ -14,7 +14,7 @@ func EnqueueOrderToRabbit(order models.Order) error {
 	if err != nil {
 		return err
 	}
-	_ = body
+
 	err = rCh.PublishWithContext(context.Background(), "", rQ.Name, false, false, amqp.Publishing{
 		ContentType: "json/application",
 		Body:        body,
