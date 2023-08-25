@@ -1,5 +1,11 @@
 package models
 
+const (
+	ORDER_STATUS_PROCESSING = "processing"
+	ORDER_STATUS_COMPLETED  = "completed"
+	ORDER_STATUS_CANCELED   = "canceled"
+)
+
 type Order struct {
 	ID          uint   `gorm:"primaryKey" json:"id"`
 	UserID      uint   `json:"user_id"`
@@ -24,6 +30,11 @@ func GetOrderById(id uint) (order Order, err error) {
 	return
 }
 
-func UpdateOrder(id uint, description, status string) error {
-	return db.Where(id).Updates(Order{Description: description, Status: status}).Error
+func GetAllOrders() (orders []Order, err error) {
+	err = db.Find(&orders).Error
+	return
+}
+
+func UpdateOrder(id uint, description, status string) int64 {
+	return db.Where(id).Updates(Order{Description: description, Status: status}).RowsAffected
 }
