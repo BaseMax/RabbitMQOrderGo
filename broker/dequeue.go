@@ -9,7 +9,7 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-func browseLastAvalableOrder(msgs <-chan amqp.Delivery) *models.Order {
+func processFirstAvalableOrder(msgs <-chan amqp.Delivery, processFirstOrder bool) *models.Order {
 	for {
 		var orderOnQ models.Order
 
@@ -29,7 +29,12 @@ func browseLastAvalableOrder(msgs <-chan amqp.Delivery) *models.Order {
 			if orderOnDB.Status != models.ORDER_STATUS_PROCESSING {
 				m.Ack(false)
 			} else {
-				m.Nack(false, true)
+				if processFirstOrder {
+					models.UpdateOrder(orderOnDB.ID, "", models.ORDER_STATUS_COMPLETED)
+					m.Ack(false)
+				} else {
+					m.Nack(false, true)
+				}
 				return &orderOnDB
 			}
 		case <-time.After(time.Millisecond * 200):
@@ -38,7 +43,7 @@ func browseLastAvalableOrder(msgs <-chan amqp.Delivery) *models.Order {
 	}
 }
 
-func DequeueLastOrder() (*models.Order, error) {
+func DequeueFirstOrder(processFirstOrder bool) (*models.Order, error) {
 	msgs, err := rCh.Consume(rQ.Name, "", false, false, false, false, nil)
 	if err != nil {
 		return nil, err
@@ -47,7 +52,7 @@ func DequeueLastOrder() (*models.Order, error) {
 		return nil, err
 	}
 
-	order := browseLastAvalableOrder(msgs)
+	order := processFirstAvalableOrder(msgs, processFirstOrder)
 
 	rCh.Close()
 	rCh, err = rConn.Channel()
