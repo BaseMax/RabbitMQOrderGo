@@ -5,7 +5,7 @@ import "errors"
 const (
 	REFUND_STATUS_APPENDING = "appending"
 	REFUND_STATUS_APPROVED  = "approved"
-	REFUND_STATUS_CANCEL    = "cancel"
+	REFUND_STATUS_CANCELED  = "canceled"
 
 	REFUND_ERROR_BADORDER = "Order is not completed"
 )
@@ -27,12 +27,12 @@ func CreateRefund(orderId uint) (id uint, err error) {
 		return 0, errors.New(REFUND_ERROR_BADORDER)
 	}
 
-	Refund := Refund{
+	refund := Refund{
 		OrderID: orderId,
 		Status:  REFUND_STATUS_APPENDING,
 	}
-	err = db.Create(&Refund).Error
-	id = Refund.ID
+	err = db.Create(&refund).Error
+	id = refund.ID
 	return
 }
 
