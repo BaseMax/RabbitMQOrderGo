@@ -37,7 +37,7 @@ func CreateOrder(c echo.Context) error {
 			return echo.ErrInternalServerError
 		}
 	}
-	if broker.EnqueueOrderToRabbit(order) != nil {
+	if broker.EnqueueToRabbit(order) != nil {
 		return echo.ErrInternalServerError
 	}
 	return c.JSON(http.StatusOK, order)
