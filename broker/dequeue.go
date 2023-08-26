@@ -43,6 +43,40 @@ func processFirstAvalableOrder(msgs <-chan amqp.Delivery, processFirstOrder bool
 	}
 }
 
+func processFirstAvalableRefund(msgs <-chan amqp.Delivery, processFirstRefund bool) *models.Refund {
+	for {
+		var refundOnQ models.Refund
+
+		select {
+		case m := <-msgs:
+			err := json.Unmarshal(m.Body, &refundOnQ)
+			if err != nil {
+				log.Println("dequeue unmarshal:", err)
+			}
+
+			refundOnDB, err := models.GetRefundById(refundOnQ.ID)
+			if err != nil {
+				log.Println("dequeue last refund:", err)
+				m.Ack(false)
+			}
+
+			if refundOnDB.Status != models.REFUND_STATUS_APPENDING {
+				m.Ack(false)
+			} else {
+				if processFirstRefund {
+					models.UpdateRefund(refundOnDB.ID, models.REFUND_STATUS_APPROVED)
+					m.Ack(false)
+				} else {
+					m.Nack(false, true)
+				}
+				return &refundOnDB
+			}
+		case <-time.After(time.Millisecond * 200):
+			return nil
+		}
+	}
+}
+
 func DequeueFirstOrder(processFirstOrder bool) (*models.Order, error) {
 	msgs, err := rCh.Consume(QUEHE_NAME_ORDERS, "", false, false, false, false, nil)
 	if err != nil {
@@ -57,4 +91,20 @@ func DequeueFirstOrder(processFirstOrder bool) (*models.Order, error) {
 	rCh.Close()
 	rCh, err = rConn.Channel()
 	return order, err
+}
+
+func DequeueFirstRefund(processFirstRefund bool) (*models.Refund, error) {
+	msgs, err := rCh.Consume(QUEHE_NAME_REFUNDS, "", false, false, false, false, nil)
+	if err != nil {
+		return nil, err
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	refund := processFirstAvalableRefund(msgs, processFirstRefund)
+
+	rCh.Close()
+	rCh, err = rConn.Channel()
+	return refund, err
 }
