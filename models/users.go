@@ -27,3 +27,14 @@ func LoginUser(username, password, email string) (uint, error) {
 	err := db.First(&user).Where("username = ? AND password = ? AND email = ?", username, hashedString, email).Error
 	return user.ID, err
 }
+
+func GetAllUsers() (users []User, err error) {
+	err = db.Find(&users).Error
+	return
+}
+
+func UpdateUser(id uint, username, password, email string) int64 {
+	hashedByte := sha256.Sum256([]byte(password))
+	hashedString := hex.EncodeToString(hashedByte[:])
+	return db.Where(id).Updates(&User{Username: username, Password: hashedString, Email: email}).RowsAffected
+}
