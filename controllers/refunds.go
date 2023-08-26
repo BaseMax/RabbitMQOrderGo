@@ -37,7 +37,7 @@ func CreateRefund(c echo.Context) error {
 			return echo.ErrInternalServerError
 		}
 	}
-	if broker.EnqueueToRabbit(refund) != nil {
+	if broker.EnqueueToRabbit(refund, broker.QUEHE_NAME_REFUNDS) != nil {
 		return echo.ErrInternalServerError
 	}
 
