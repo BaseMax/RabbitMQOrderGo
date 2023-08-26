@@ -32,13 +32,14 @@ func initRoutes() *echo.Echo {
 	g.POST("orders/first/done", controllers.CompleteOrder, middlewares.IsAdmin)
 	g.DELETE("orders/:id", controllers.DeleteOrder, middlewares.IsAdmin)
 
-	g.POST("refunds/", TODO)
-	g.GET("refunds/:id", TODO)
-	g.GET("refunds/:id/status", TODO)
-	g.POST("refunds/:id/decancel", TODO)
-	g.GET("refunds/last", TODO, middlewares.IsAdmin)
-	g.POST("refunds/last/done", TODO, middlewares.IsAdmin)
-	g.DELETE("refunds/:id", TODO, middlewares.IsAdmin)
+	g.POST("refunds", controllers.CreateRefund)
+	g.GET("refunds/:id", controllers.FetchRefund)
+	g.GET("refunds/", controllers.FetchAllRefunds)
+	g.GET("refunds/:id/status", controllers.RefundStatus)
+	g.POST("refunds/:id/cancel", controllers.CancelRefund)
+	g.GET("refunds/first", controllers.FirstRefund, middlewares.IsAdmin)
+	g.POST("refunds/last/done", controllers.CompleteRefund, middlewares.IsAdmin)
+	g.DELETE("refunds/:id", controllers.DeleteRefund, middlewares.IsAdmin)
 
 	return e
 }
