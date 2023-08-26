@@ -32,7 +32,7 @@ func initRoutes() *echo.Echo {
 	g.POST("orders/first/done", controllers.CompleteOrder, middlewares.IsAdmin)
 	g.DELETE("orders/:id", controllers.DeleteOrder, middlewares.IsAdmin)
 
-	g.POST("refunds", controllers.CreateRefund)
+	g.POST("refunds/:order_id", controllers.CreateRefund)
 	g.GET("refunds/:id", controllers.FetchRefund)
 	g.GET("refunds/", controllers.FetchAllRefunds)
 	g.GET("refunds/:id/status", controllers.RefundStatus)
