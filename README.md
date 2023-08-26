@@ -68,6 +68,28 @@ RABBIT_HOSTNAME=localhost MYSQL_HOSTNAME=localhost go run .
 
 - Check `localhost:1567` for RabbitMQ manager.
 
+- Use `testutils.sh`.
+1. Source it on your shell
+```bash
+. testutils.sh
+```
+
+2. Export TOKEN
+```bash
+TOKEN="token"
+```
+
+2. Use its functions to create mock data on database.
+```bash
+getToken
+fakeOrders
+completeOrders
+calcelOrders
+fakeRefunds
+```
+
+You can track RabbitMQ manager during calling functions.
+
 ## API
 
 ### Health Check
