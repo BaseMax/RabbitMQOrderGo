@@ -9,8 +9,8 @@ import (
 	"github.com/BaseMax/RabbitMQOrderGo/models"
 )
 
-func EnqueueOrderToRabbit(order models.Order) error {
-	body, err := json.Marshal(order)
+func EnqueueToRabbit[T models.Order | models.Refund](msg T) error {
+	body, err := json.Marshal(msg)
 	if err != nil {
 		return err
 	}
