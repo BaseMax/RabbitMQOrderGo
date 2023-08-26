@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -61,4 +62,32 @@ func Refresh(c echo.Context) error {
 	})
 	bearer, _ := refreshToken.SignedString([]byte(conf.GetJwtSecret()))
 	return c.JSON(http.StatusOK, map[string]any{"bearer": bearer})
+}
+
+func GetAllUsers(c echo.Context) error {
+	users, err := models.GetAllUsers()
+	if err != nil {
+		return echo.ErrNotFound
+	}
+	return c.JSON(http.StatusOK, users)
+}
+
+func EditUser(c echo.Context) error {
+	var user models.User
+
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return echo.ErrBadRequest
+	}
+
+	err = json.NewDecoder(c.Request().Body).Decode(&user)
+	if err != nil {
+		return echo.ErrBadRequest
+	}
+
+	if models.UpdateUser(uint(id), user.Username, user.Password, user.Email) == 0 {
+		return echo.ErrNotFound
+	}
+
+	return c.NoContent(http.StatusNoContent)
 }
