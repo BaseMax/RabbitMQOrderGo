@@ -29,7 +29,7 @@ func LoginUser(username, password, email string) (uint, error) {
 }
 
 func GetAllUsers() (users []User, err error) {
-	err = db.Find(&users).Error
+	err = db.Select("id, username, email").Find(&users).Error
 	return
 }
 
