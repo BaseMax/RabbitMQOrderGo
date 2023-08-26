@@ -38,3 +38,7 @@ func GetAllOrders() (orders []Order, err error) {
 func UpdateOrder(id uint, description, status string) int64 {
 	return db.Where(id).Updates(Order{Description: description, Status: status}).RowsAffected
 }
+
+func DeleteOrder(id uint) int64 {
+	return db.Delete(&Order{}, id).RowsAffected
+}
