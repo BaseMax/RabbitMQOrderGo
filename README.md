@@ -17,8 +17,13 @@ This project showcases an order processing system implemented using RabbitMQ as 
 
 ## Requirements
 
+- Docker Compose
+
+or
+
 - Go (1.13+ recommended)
 - RabbitMQ (running locally or on a reachable server)
+- MySQL (runnling locally or on a reachable server)
 
 ## Getting Started
 
@@ -29,27 +34,61 @@ git clone https://github.com/BaseMax/RabbitMQOrderGo.git
 cd RabbitMQOrderGo
 ```
 
-2. Install the streadway/amqp library:
+2. download rependencies:
 ```bash
-go get github.com/streadway/amqp
+go mod tidy
 ```
 
-3. Start the consumer:
-```bash
-go run consumer.go
+3. Copy example config and change it
+```
+cp .env.example .env
 ```
 
-4. In a separate terminal, start the producer:
+4. Start the project by docker:
 ```bash
-go run producer.go
+docker-compose up -d
 ```
 
-The producer will send an example order to the RabbitMQ queue, and the consumer will process it and update its status.
+NOTE: producer and consumer was located on one application. One endpoint will produce and another will consume.
 
-## Project Structure
+### Note for debugging
 
-- `producer.go`: The producer application that sends orders to the RabbitMQ queue.
-- `consumer.go`: The consumer application that processes orders from the RabbitMQ queue.
+- You can vendor all dependencies before using docker build. This will speed up your build process.
+```bash
+go mod vendor
+```
+
+- You can just up MySQL and RabbitMQ server and then change temporary your app configuration for using this servers.
+```bash
+docker-compose down
+docker-compose up db rabbit -d
+
+RABBIT_HOSTNAME=localhost MYSQL_HOSTNAME=localhost go run .
+```
+
+- Check `localhost:1567` for RabbitMQ manager.
+
+- Use `testutils.sh`.
+1. Source it on your shell
+```bash
+. testutils.sh
+```
+
+2. Export TOKEN
+```bash
+TOKEN="token"
+```
+
+2. Use its functions to create mock data on database.
+```bash
+getToken
+fakeOrders
+completeOrders
+calcelOrders
+fakeRefunds
+```
+
+You can track RabbitMQ manager during calling functions.
 
 ## API
 
@@ -61,9 +100,65 @@ The producer will send an example order to the RabbitMQ queue, and the consumer 
 
 **Description:** Health check endpoint to verify the server's status.
 
+**Admin Only**
+
 ---
 
-### Submit Order
+### Register
+
+**Endpoint:** `/register`
+
+**Method:** `POST`
+
+**Description:** Register endpoint to save a new user.
+
+---
+
+### Login
+
+**Endpoint:** `/login`
+
+**Method:** `POST`
+
+**Description:** Login endpoint to verify user authority and return JWT token.
+
+---
+
+### Refresh
+
+**Endpoint:** `/refresh`
+
+**Method:** `POST`
+
+**Description:** Refresh endpoint for refreshing user token.
+
+---
+
+### Get All Users
+
+**Endpoint:** `/users`
+
+**Method:** `GET`
+
+**Description:** Sumbit all users.
+
+**Admin Only**
+
+---
+
+### Edit User
+
+**Endpoint:** `/user/:id`
+
+**Method:** `PUT`
+
+**Description:** Update content of a user.
+
+**Admin Only**
+
+---
+
+### Create Order
 
 **Endpoint:** `/orders`
 
@@ -73,9 +168,9 @@ The producer will send an example order to the RabbitMQ queue, and the consumer 
 
 ---
 
-### Retrieve Order Status
+### Fetch Order
 
-**Endpoint:** `/orders/:orderID`
+**Endpoint:** `/orders/:id`
 
 **Method:** `GET`
 
@@ -83,19 +178,19 @@ The producer will send an example order to the RabbitMQ queue, and the consumer 
 
 ---
 
-### List All Orders
+### Fetch All Orders
 
 **Endpoint:** `/orders`
 
 **Method:** `GET`
 
-**Description:** Get a list of all orders in the system.
+**Description:** Retrieve the status of a specific order.
 
 ---
 
-### Update Order Status
+### Edit Order
 
-**Endpoint:** `/orders/:orderID/status`
+**Endpoint:** `/orders/:id`
 
 **Method:** `PUT`
 
@@ -103,109 +198,65 @@ The producer will send an example order to the RabbitMQ queue, and the consumer 
 
 ---
 
+### Order Status
+
+**Endpoint:** `/orders/:id/status`
+
+**Method:** `GET`
+
+**Description:** Update the status of a specific order.
+
+---
+
 ### Cancel Order
 
-**Endpoint:** `/orders/:orderID/cancel`
+**Endpoint:** `/orders/:id/cancel`
 
 **Method:** `POST`
 
-**Description:** Cancel a specific order.
+**Description:** Update the status of a specific order.
 
 ---
 
-### Get Customer Orders
+### First Order
 
-**Endpoint:** `/customers/:customerID/orders`
+**Endpoint:** `/orders/fist`
 
 **Method:** `GET`
 
-**Description:** Get a list of orders for a specific customer.
+**Description:** Browse first available order from queue.
+
+**Admin Only**
 
 ---
 
-### Calculate Order Total
+### Complete Order
 
-**Endpoint:** `/orders/:orderID/total`
-
-**Method:** `GET`
-
-**Description:** Calculate the total cost of a specific order.
-
----
-
-### Process Payment
-
-**Endpoint:** `/orders/:orderID/payment`
+**Endpoint:** `/orders/first/done`
 
 **Method:** `POST`
 
-**Description:** Process the payment for a specific order.
+**Description:** Complete first available order from queue and dequeue it.
+
+**Admin Only**
 
 ---
 
-### Assign Order to User
+### Delete Order
 
-**Endpoint:** `/orders/:orderID/assign`
+**Endpoint:** `/orders/:id`
 
-**Method:** `PUT`
+**Method:** `DELETE`
 
-**Description:** Assign a specific order to a user or employee.
+**Description:** Delete a specific order.
 
----
-
-### Get User's Assigned Orders
-
-**Endpoint:** `/users/:userID/orders`
-
-**Method:** `GET`
-
-**Description:** Get a list of orders assigned to a specific user.
+**Admin Only**
 
 ---
 
-### Get Order History
+### Create Refund
 
-**Endpoint:** `/orders/:orderID/history`
-
-**Method:** `GET`
-
-**Description:** Retrieve the history of status changes for a specific order.
-
----
-
-### Export Order Data
-
-**Endpoint:** `/orders/export`
-
-**Method:** `GET`
-
-**Description:** Export order data in a specified format (CSV, JSON, etc.).
-
----
-
-### Import Order Data
-
-**Endpoint:** `/orders/import`
-
-**Method:** `POST`
-
-**Description:** Import order data from an external source.
-
----
-
-### Generate Order Report
-
-**Endpoint:** `/reports/orders`
-
-**Method:** `GET`
-
-**Description:** Generate a report containing order statistics and details.
-
----
-
-### Request Order Refund
-
-**Endpoint:** `/orders/:orderID/refund`
+**Endpoint:** `/refunds/:order_id`
 
 **Method:** `POST`
 
@@ -213,9 +264,29 @@ The producer will send an example order to the RabbitMQ queue, and the consumer 
 
 ---
 
-### Check Refund Status
+### Fetch Refund
 
-**Endpoint:** `/orders/:orderID/refund/status`
+**Endpoint:** `/refunds/:id`
+
+**Method:** `GET`
+
+**Description:** Retrieve a specific refund.
+
+---
+
+### Fetch All Refunds
+
+**Endpoint:** `/refunds`
+
+**Method:** `GET`
+
+**Description:** Retrieve all refunds.
+
+---
+
+### Refund Status
+
+**Endpoint:** `/refunds/:id/status`
 
 **Method:** `GET`
 
@@ -223,85 +294,83 @@ The producer will send an example order to the RabbitMQ queue, and the consumer 
 
 ---
 
-### Get Product Details
+### Cancel Refund
 
-**Endpoint:** `/products/:productID`
+**Endpoint:** `/refunds/:id/cancel`
 
-**Method:** `GET`
+**Method:** `POST`
 
-**Description:** Retrieve details about a specific product.
-
----
-
-### List Available Products
-
-**Endpoint:** `/products`
-
-**Method:** `GET`
-
-**Description:** Get a list of all available products in the system.
+**Description:** Cancel a refund.
 
 ---
 
-### Update Product Information
+### First Refund
 
-**Endpoint:** `/products/:productID`
+**Endpoint:** `/refunds/first`
 
-**Method:** `PUT`
+**Method:** `GET`
 
-**Description:** Update information for a specific product.
+**Description:** Browse first available refund from queue.
 
-## Database Schema
+**Admin Only**
 
-```
-Table: orders
--------------------------------------
-| order_id | customer_id | status   |
--------------------------------------
-| 1        | 101         | processing|
-| 2        | 102         | completed |
-| 3        | 103         | cancelled |
--------------------------------------
+---
 
-Table: customers
--------------------------------------
-| customer_id | name      | email    |
--------------------------------------
-| 101         | John Doe  | john@example.com |
-| 102         | Jane Smith| jane@example.com |
-| 103         | Alice Lee | alice@example.com|
--------------------------------------
+### Complete Refund
 
-Table: products
--------------------------------------
-| product_id | name      | price    |
--------------------------------------
-| 201        | Product A | 19.99    |
-| 202        | Product B | 29.99    |
-| 203        | Product C | 14.99    |
--------------------------------------
+**Endpoint:** `/refunds/first/done`
 
-Table: users
--------------------------------
-| user_id | name      | role |
--------------------------------
-| 301     | Admin     | admin|
-| 302     | Employee  | user |
--------------------------------
+**Method:** `POST`
 
-Table: refunds
---------------------------------
-| refund_id | order_id | status |
---------------------------------
-| 401       | 1        | pending|
-| 402       | 2        | approved|
-| 403       | 3        | declined|
---------------------------------
+**Description:** Process first available refund from queue and dequeue it.
+
+**Admin Only**
+
+---
+
+### Delete Refund
+
+**Endpoint:** `/refunds/:id`
+
+**Method:** `DELETE`
+
+**Description:** Delete a specific refund.
+
+**Admin Only**
+
+---
+
+## Database models
+
+```go
+type User struct {
+	ID       uint   `gorm:"primaryKey" json:"id"`
+	Password string `gorm:"not null" json:"pass"`
+	Username string `gorm:"unique;not null" json:"user"`
+	Email    string `gorm:"unique;not null" json:"email"`
+}
+
+type Order struct {
+	ID          uint   `gorm:"primaryKey" json:"id"`
+	UserID      uint   `json:"user_id"`
+	Status      string `gorm:"not null;default:processing" json:"status"`
+	Description string `gorm:"not null" json:"description"`
+
+	User User `json:"-"`
+}
+
+type Refund struct {
+	ID      uint   `gorm:"primaryKey" json:"id"`
+	OrderID uint   `gorm:"not null;unique" json:"order_id"`
+	Status  string `gorm:"not null;default:appending" json:"status"`
+
+	Order Order `json:"-"`
+}
 ```
 
 ## Acknowledgements
 
-This project is built using the `streadway/amqp` Go library for RabbitMQ communication. Special thanks to the library authors and the Go community for their contributions.
+This project is built using the `rabbitmq/amqp091-go` Go library for RabbitMQ communication. Special thanks to the library authors and the Go community for their contributions.
 
 Feel free to customize and expand upon this project to meet your specific use case and business requirements. If you have any questions or suggestions, please open an issue or pull request in this repository.
 
