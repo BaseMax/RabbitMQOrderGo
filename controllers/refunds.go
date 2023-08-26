@@ -45,19 +45,46 @@ func CreateRefund(c echo.Context) error {
 }
 
 func FetchRefund(c echo.Context) error {
-	return nil
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return echo.ErrBadRequest
+	}
+	refund, err := models.GetRefundById(uint(id))
+	if err != nil {
+		return echo.ErrNotFound
+	}
+	return c.JSON(http.StatusOK, refund)
 }
 
 func FetchAllRefunds(c echo.Context) error {
-	return nil
+	refunds, err := models.GetAllRefunds()
+	if err != nil {
+		return echo.ErrNotFound
+	}
+	return c.JSON(http.StatusOK, refunds)
 }
 
 func RefundStatus(c echo.Context) error {
-	return nil
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return echo.ErrBadRequest
+	}
+	refund, err := models.GetRefundById(uint(id))
+	if err != nil {
+		return echo.ErrNotFound
+	}
+	return c.JSON(http.StatusOK, map[string]any{"status": refund.Status})
 }
 
 func CancelRefund(c echo.Context) error {
-	return nil
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return echo.ErrBadRequest
+	}
+	if models.UpdateRefund(uint(id), models.REFUND_STATUS_CANCELED) == 0 {
+		return echo.ErrNotFound
+	}
+	return c.NoContent(http.StatusNoContent)
 }
 
 func FirstRefund(c echo.Context) error {
@@ -69,5 +96,12 @@ func CompleteRefund(c echo.Context) error {
 }
 
 func DeleteRefund(c echo.Context) error {
-	return nil
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return echo.ErrBadRequest
+	}
+	if models.DeleteRefund(uint(id)) == 0 {
+		return echo.ErrNotFound
+	}
+	return c.NoContent(http.StatusNoContent)
 }
