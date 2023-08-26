@@ -130,5 +130,12 @@ func CompleteOrder(c echo.Context) error {
 }
 
 func DeleteOrder(c echo.Context) error {
-	return nil
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return echo.ErrBadRequest
+	}
+	if models.DeleteOrder(uint(id)) == 0 {
+		return echo.ErrNotFound
+	}
+	return c.NoContent(http.StatusNoContent)
 }
