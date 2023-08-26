@@ -87,12 +87,31 @@ func CancelRefund(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
+func handleRefundQueue(c echo.Context, processComplete bool) error {
+	if broker.IsClosed() {
+		if broker.ConnectAndCreateQueue() != nil {
+			return echo.ErrInternalServerError
+		}
+	}
+
+	refund, err := broker.DequeueFirstRefund(processComplete)
+	if err != nil {
+		return echo.ErrNotFound
+	}
+
+	if refund == nil {
+		return echo.ErrNotFound
+	}
+
+	return c.JSON(http.StatusOK, refund)
+}
+
 func FirstRefund(c echo.Context) error {
-	return nil
+	return handleRefundQueue(c, false)
 }
 
 func CompleteRefund(c echo.Context) error {
-	return nil
+	return handleRefundQueue(c, true)
 }
 
 func DeleteRefund(c echo.Context) error {

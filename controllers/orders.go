@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -101,7 +100,7 @@ func CancelOrder(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
-func handleQueue(c echo.Context, processComplete bool) error {
+func handleOrderQueue(c echo.Context, processComplete bool) error {
 	if broker.IsClosed() {
 		if broker.ConnectAndCreateQueue() != nil {
 			return echo.ErrInternalServerError
@@ -110,7 +109,6 @@ func handleQueue(c echo.Context, processComplete bool) error {
 
 	order, err := broker.DequeueFirstOrder(processComplete)
 	if err != nil {
-		log.Println(err)
 		return echo.ErrNotFound
 	}
 
@@ -122,11 +120,11 @@ func handleQueue(c echo.Context, processComplete bool) error {
 }
 
 func FirstOrder(c echo.Context) error {
-	return handleQueue(c, false)
+	return handleOrderQueue(c, false)
 }
 
 func CompleteOrder(c echo.Context) error {
-	return handleQueue(c, true)
+	return handleOrderQueue(c, true)
 }
 
 func DeleteOrder(c echo.Context) error {
