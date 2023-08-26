@@ -5,10 +5,14 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
+const (
+	QUEHE_NAME_ORDERS  = "orders"
+	QUEHE_NAME_REFUNDS = "refunds"
+)
+
 var (
 	rConn *amqp.Connection
 	rCh   *amqp.Channel
-	rQ    amqp.Queue
 )
 
 func ConnectAndCreateQueue() error {
@@ -22,10 +26,6 @@ func ConnectAndCreateQueue() error {
 	if err != nil {
 		rConn = nil
 		rCh = nil
-		return err
-	}
-	rQ, err = rCh.QueueDeclare("orders", true, false, false, false, nil)
-	if err != nil {
 		return err
 	}
 	return nil

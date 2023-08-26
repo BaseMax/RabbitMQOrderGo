@@ -44,7 +44,7 @@ func processFirstAvalableOrder(msgs <-chan amqp.Delivery, processFirstOrder bool
 }
 
 func DequeueFirstOrder(processFirstOrder bool) (*models.Order, error) {
-	msgs, err := rCh.Consume(rQ.Name, "", false, false, false, false, nil)
+	msgs, err := rCh.Consume(QUEHE_NAME_ORDERS, "", false, false, false, false, nil)
 	if err != nil {
 		return nil, err
 	}
