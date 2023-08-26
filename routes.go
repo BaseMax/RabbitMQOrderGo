@@ -9,8 +9,6 @@ import (
 	"github.com/BaseMax/RabbitMQOrderGo/middlewares"
 )
 
-func TODO(c echo.Context) error { return nil }
-
 func initRoutes() *echo.Echo {
 	e := echo.New()
 	g := e.Group("/", echojwt.WithConfig(echojwt.Config{SigningKey: conf.GetJwtSecret()}))
@@ -20,7 +18,8 @@ func initRoutes() *echo.Echo {
 	e.POST("/register", controllers.Register)
 	e.POST("/login", controllers.Login)
 	g.POST("refresh", controllers.Refresh)
-	g.PUT("user/:username", TODO, middlewares.IsAdmin)
+	g.GET("users", controllers.GetAllUsers, middlewares.IsAdmin)
+	g.PUT("user/:id", controllers.EditUser, middlewares.IsAdmin)
 
 	g.POST("orders", controllers.CreateOrder)
 	g.GET("orders/:id", controllers.FetchOrder)
