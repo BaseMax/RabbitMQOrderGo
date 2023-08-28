@@ -2,12 +2,14 @@ package controllers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
 
 	"github.com/BaseMax/RabbitMQOrderGo/broker"
+	"github.com/BaseMax/RabbitMQOrderGo/conf"
 	"github.com/BaseMax/RabbitMQOrderGo/helpers"
 	"github.com/BaseMax/RabbitMQOrderGo/models"
 )
@@ -39,6 +41,23 @@ func CreateOrder(c echo.Context) error {
 	if broker.EnqueueToRabbit(order, broker.QUEHE_NAME_ORDERS) != nil {
 		return echo.ErrInternalServerError
 	}
+
+	_, username := helpers.GetLoggedinUserInfo(c)
+	adminName, _, adminMail := conf.GetAdminInfo()
+	if username != adminName {
+		sub := "User " + username + " created a new order"
+		body := "Hi there admin!\n" +
+			"User " + username + " created an order with following description:\n" +
+			order.Description + "\n"
+
+		go func() {
+			err = helpers.EasySendMail(sub, body, adminMail)
+			if err != nil {
+				log.Println("mailer:", err)
+			}
+		}()
+	}
+
 	return c.JSON(http.StatusOK, order)
 }
 
@@ -97,34 +116,88 @@ func CancelOrder(c echo.Context) error {
 	if models.UpdateOrder(uint(id), "", models.ORDER_STATUS_CANCELED) == 0 {
 		return echo.ErrNotFound
 	}
+
+	uid, username := helpers.GetLoggedinUserInfo(c)
+	adminName, _, adminMail := conf.GetAdminInfo()
+
+	user, err := models.GetUserById(uid)
+	if err != nil {
+		return echo.ErrNotFound
+	}
+
+	order, err := models.GetOrderById(uint(id))
+	if err != nil {
+		return echo.ErrNotFound
+	}
+
+	sub := "Your order has been canceled"
+	body := "Hi there " + username + "!\n" +
+		"Unfortunately your following order was canceled with following description:\n" +
+		order.Description + "\n"
+
+	mailAddress := adminMail
+	if username == adminName {
+		mailAddress = user.Email
+	}
+
+	go func() {
+		err = helpers.EasySendMail(sub, body, mailAddress)
+		if err != nil {
+			log.Println("mailer:", err)
+		}
+	}()
+
 	return c.NoContent(http.StatusNoContent)
 }
 
-func handleOrderQueue(c echo.Context, processComplete bool) error {
+func handleOrderQueue(c echo.Context, processComplete bool) (*models.Order, error) {
 	if broker.IsClosed() {
 		if broker.ConnectAndCreateQueue() != nil {
-			return echo.ErrInternalServerError
+			return nil, echo.ErrInternalServerError
 		}
 	}
 
 	order, err := broker.DequeueFirstOrder(processComplete)
 	if err != nil {
-		return echo.ErrNotFound
+		return nil, echo.ErrNotFound
 	}
 
 	if order == nil {
-		return echo.ErrNotFound
+		return nil, echo.ErrNotFound
 	}
 
-	return c.JSON(http.StatusOK, order)
+	return order, c.JSON(http.StatusOK, order)
 }
 
 func FirstOrder(c echo.Context) error {
-	return handleOrderQueue(c, false)
+	_, err := handleOrderQueue(c, false)
+	return err
 }
 
 func CompleteOrder(c echo.Context) error {
-	return handleOrderQueue(c, true)
+	order, err := handleOrderQueue(c, true)
+	if err != nil {
+		return err
+	}
+
+	user, err := models.GetUserById(order.UserID)
+	if err != nil {
+		return echo.ErrNotFound
+	}
+
+	sub := "Your order is complete"
+	body := "Hi there " + user.Username + "!\n" +
+		"We checked your order and aggree with it. Order description:\n" +
+		order.Description + "\n"
+
+	go func() {
+		err = helpers.EasySendMail(sub, body, user.Email)
+		if err != nil {
+			log.Println("mailer:", err)
+		}
+	}()
+
+	return nil
 }
 
 func DeleteOrder(c echo.Context) error {
