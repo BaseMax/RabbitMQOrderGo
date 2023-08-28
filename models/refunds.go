@@ -37,7 +37,7 @@ func CreateRefund(orderId uint) (id uint, err error) {
 }
 
 func GetRefundById(id uint) (Refund Refund, err error) {
-	err = db.First(&Refund, id).Error
+	err = db.Preload("Order.User").First(&Refund, id).Error
 	return
 }
 

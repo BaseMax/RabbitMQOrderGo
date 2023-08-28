@@ -38,3 +38,8 @@ func UpdateUser(id uint, username, password, email string) int64 {
 	hashedString := hex.EncodeToString(hashedByte[:])
 	return db.Where(id).Updates(&User{Username: username, Password: hashedString, Email: email}).RowsAffected
 }
+
+func GetUserById(id uint) (user *User, err error) {
+	err = db.First(&user, id).Error
+	return
+}
