@@ -340,6 +340,30 @@ You can track RabbitMQ manager during calling functions.
 
 ---
 
+| Method | Endpoints | Description | Screenshot |
+| --- | --- | --- | --- |
+| POST | /register | Register endpoint to save a new user. | ![register](./screenshots/register.png) |
+| POST | /login | Login endpoint to verify user authority and return JWT token. | ![login](./screenshots/login.png) |
+| POST | /refresh | Refresh endpoint for refreshing user token. | ![refresh](./screenshots/refresh.png) |
+| POST | /orders | Submit an order for processing. | ![Create Order](./screenshots/create_order.png) |
+| GET | /orders/:id | Retrieve the status of a specific order. | ![Fetch Order](./screenshots/get_order.png) |
+| GET | /orders | Retrieve the status of a specific order. | ![Fetch All Orders](./screenshots/get_all_orders.png) |
+| PUT | /orders/:id | Update the status of a specific order. | ![Edit Order](./screenshots/update_order.png) |
+| GET | /orders/:id/status | Get the status of a specific order. | ![Get Order Status](./screenshots/get_order_status.png) |
+| POST | /orders/:id/cancel | Cancel specific order. | ![Cancel Order](./screenshots/cancel_order.png) |
+| GET | /orders/fist | Browse first available order from queue. | ![Get First Order](./screenshots/get_first_order.png) |
+| POST | /orders/first/done | Complete first available order from queue and dequeue it. | ![Complete Order](./screenshots/done_first_order.png) |
+| DELETE | /orders/:id | Delete a specific order. | ![Delete Order](./screenshots/delete_order.png) |
+| POST | /refunds/:order_id | Request a refund for a specific order. | ![Create Refund](./screenshots/create_refund.png) |
+| GET | /refunds/:id | Retrieve a specific refund. | ![Fetch Refund](./screenshots/get_refund.png) |
+| GET | /refunds | Retrieve all refunds. | ![Fetch All Refunds](./screenshots/get_first_refund.png) |
+| GET | /refunds/:id/status | Check the status of a refund request for a specific order. | ![Refund Status](./screenshots/get_refund_status.png) |
+| POST | /refunds/:id/cancel | Cancel a refund. | ![Cancel Refund](./screenshots/cancel_refund.png) |
+| GET | /refunds/first | Browse first available refund from queue. | ![Get First Refund](./screenshots/get_first_refund.png) |
+| POST | /refunds/first/done | Process first available refund from queue and dequeue it. | ![Complete First Refund](./screenshots/done_first_refund.png) |
+| DELETE | /refunds/:id | Delete a specific refund. | ![Delete Refund](./screenshots/delete_refund.png) |
+| --- | --- | --- |
+
 ## Database models
 
 ```go
